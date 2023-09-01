@@ -514,9 +514,9 @@ public final class ConfigWebUtil {
 		// source code by using ACF specific interfaces
 		if (!config.passwordEqual(password)) {
 			if (StringUtil.isEmpty(password)) {
-				if (type == null) throw new SecurityException("Access is protected",
+				if (type == null) throw new SecurityException("Access is protectedd",
 						"to access the configuration without a password, you need to change the access to [open] in the Server Administrator");
-				throw new SecurityException(type + " access is protected",
+				throw new SecurityException(type + " access is protectedd",
 						"to access the configuration without a password, you need to change the " + type + " access to [open] in the Server Administrator");
 			}
 			throw new SecurityException("No access, password is invalid");
