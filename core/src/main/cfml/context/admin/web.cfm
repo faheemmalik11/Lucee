@@ -55,15 +55,23 @@
 
 <!--- Form --->
 <cfif structKeyExists(form, "checkPassword" )>
-	<cfadmin action="checkPassword"
-		type="#request.adminType#">
+	<cfadmin 
+		action="checkPassword"
+		type="#request.adminType#"
+	>
 	<cflocation url="#request.self#?action=overview" addtoken="no">
 </cfif>
+
+<cfdump var="#FORM#" label="FORM" />
+<cfdump var="#session#" label="session" />
 
 <cfif structKeyExists(form, "login_password" & request.adminType)>
 	<cfadmin action="getLoginSettings"
 		type="#request.adminType#"
 		returnVariable="loginSettings">
+		
+	<cfdump var="#loginSettings#" label="loginSettings" />
+
 
 	<cfset loginPause = loginSettings.delay>
 	<cfset keyLTL="lastTryToLogin"&":"& request.adminType&":"&(cgi.context_path?:"")>
@@ -80,6 +88,9 @@
 				type="#request.adminType#"
 				pw="#form["login_password"&ad]#"
 				returnVariable="hashedPassword">
+
+				<cfdump var="#hashedPassword#" label="hashedPassword" />
+
 			<cfset session["password" & request.adminType]=hashedPassword>
 			<cfset session.lucee_admin_lang=form.lang>
 			<!--- Thread operation for update provider --->
@@ -98,7 +109,6 @@
 		</cfif>
 	</cfif>
 </cfif>
-
 <!--- Process New Password !--->
 <cfif structKeyExists(form, "new_password") && structKeyExists(form, "new_password_re")>
 	<cfif len(form.new_password) LT 6>
@@ -135,6 +145,7 @@
 		<cfcatch></cfcatch>
 	</cftry>
 </cfif>
+<cfdump var="#session#" label="session" />
 
 <!--- we are logged in into the server admin, but not the web admin, may the password is the same? --->
 <cfif ((request.adminType?:"") EQ "web") && 
@@ -149,11 +160,14 @@
 	</cfif>
 </cfif>
 
+
 <cfif structKeyExists(session, "password" & request.adminType)>
 	<cftry>
 		<cfadmin action="connect"
 			type="#request.adminType#"
-			password="#session["password" & request.adminType]#">
+			password="#session["password" & request.adminType]#"
+		>
+		<cfdump var="#session#" label="session" />
 
 		<cfif request.adminType == "server">
 			<cfadmin action="getDevelopMode"
@@ -167,22 +181,27 @@
 		</cfif>
 
 		<cfcatch>
+			<cfdump var="#cfcatch.message#" label="cfcatch.message" />
+			<cfdump var="#cfcatch#" label="cfcatch" />
+
 			<cfset login_error=cfcatch.message>
 			<cfset structDelete(session, "password" & request.adminType)>
 		</cfcatch>
 	</cftry>
 </cfif>
 </cfsilent>
+<cfdump var="#session#" label="session" />
+
 
 <cfparam name="session.lucee_admin_lang" default="en">
 
 <cfinclude template="resources/text.cfm">
+
 <cfinclude template="web_functions.cfm">
 
 <cfif !structKeyExists(application, "adminfunctions") or (structKeyExists(session, "alwaysNew") && session.alwaysNew)>
 	<cfset application.adminfunctions = new adminfunctions() />
 </cfif>
-
 <!--- Load Plugins --->
 <cffunction name="loadPluginLanguage" output="false">
 	<cfargument name="pluginDir">
@@ -506,6 +525,11 @@
 <cfelse>
 	<cfsavecontent variable="content">
 		<cfif !findOneOf("\/",current.action) && fileExists("#current.action#.cfm")>
+
+			<cfdump var="#current#" label="current" />
+			<cfdump var="#current.action#.cfm" label="zx" />
+			
+
 			<cfinclude template="#current.action#.cfm">
 		<cfelse>
 			<cfset current.label = "Error">
@@ -532,7 +556,7 @@
 					$('.submit,.menu_inactive,.menu_active').click(__blockUI);
 				});
 				$("input[type='submit']").on("click", function(){
-					if ($('span').hasClass( "commentError" )){
+					if ($('span').hasClass( "commentError" )) {
 						$("span.commentError").each(function () {
 							$(this).remove();
 						});

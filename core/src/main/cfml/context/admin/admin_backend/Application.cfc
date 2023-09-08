@@ -34,17 +34,32 @@ this.sessionCookie.path = getAppFolderPath();  // the admin is always in a folde
 this.tag.cookie.sameSite = "strict";
 this.tag.cookie.path = getAppFolderPath();
 this.tag.cookie.httpOnly = true; // prevent access to session cookies from javascript
-
+this.generateSES = true;
+this.SESOmitIndex = true;
+this.preflightOptions = true;
+this.optionsAccessControl = {
+    origin: "*",
+    headers: "Origin, X-Requested-With, Content-Type, Accept, Authorization, Access-Control-Allow-Headers, Access-Control-Allow-Methods, Access-Control-Allow-Origin"
+};
 this.xmlFeatures = {
 	externalGeneralEntities: false,
 	secure: true,
 	disallowDoctypeDecl: true
 };
 
+// var response = getPageContext().getResponse();
+// var response.setHeader("Access-Control-Allow-Origin","*");
+
 request.singleMode=getApplicationSettings().singleContext;
 if(request.singleMode) request.adminType="server";
 public function onRequestStart() {
+
+	var localPath = "#ExpandPath('/')#/core/src/main/cfml/context/admin/admin_backend";
+
+	var Application.cfcs = localPath&"/cfcs";
 	
+	var response = getPageContext().getResponse();
+	response.setHeader("Access-Control-Allow-Origin","*");
 	// if not logged in, we only allow access to admin|web|server[.cfm]
 	if(!structKeyExists(session, "passwordWeb") && !structKeyExists(session, "passwordServer")){
 		var fileName=listLast(cgi.script_name,"/");
@@ -64,6 +79,9 @@ public function onRequestStart() {
 }
 
 public function onApplicationStart(){
+
+var response = getPageContext().getResponse();
+response.setHeader("Access-Control-Allow-Origin","*");
 	if(structKeyExists(server.system.environment,"LUCEE_ADMIN_ENABLED") && server.system.environment.LUCEE_ADMIN_ENABLED EQ false){
 		writeLog(text="The Lucee Admin is disabled by [LUCEE_ADMIN_ENABLED]", type="error", log="application");
 		cfheader(statuscode="404" statustext="Invalid access");

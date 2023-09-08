@@ -121,7 +121,7 @@ const Login = () => {
                                                 >
                                                     
                                                     {languageOptions.map((option) => {
-                                                        return <option value={option.value} selected={form.language === option.value} key={option.value} >
+                                                        return <option value={option.value} defaultValue={form.language} key={option.value} >
                                                             {option.label}
                                                         </option>
                                                     })}
@@ -144,7 +144,7 @@ const Login = () => {
                                                 >
 
                                                     {rememberOptions.map((option) => {
-                                                        return <option value={option.value} selected={form.remember === option.value} key={option.value} >
+                                                        return <option value={option.value} defaultValue={form.remember} key={option.value} >
                                                             {option.label}
                                                         </option>
                                                     })}
@@ -161,7 +161,7 @@ const Login = () => {
                                                 >
                                                     Submit
                                                 </button>
-                                            </div>
+                                             </div>
 
                                         </div>
                                     </form>

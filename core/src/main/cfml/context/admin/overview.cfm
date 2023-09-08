@@ -23,7 +23,8 @@ Defaults --->
 	<cfinclude template="ext.functions.cfm">
 	<cfset application[request.admintype].preloadedExtensionProviders=true>
 </cfif>
-
+<cfdump var="#request#" />
+<cfdump var="#FORM#" />
 <cftry>
 	<cfswitch expression="#form.mainAction#">
 	<!--- UPDATE Label --->
