@@ -14,14 +14,16 @@ export const login = async (body: ILogin) => {
     
     try {
         response = await axios.post(
-            `${config.defaults.api_url}?m=authenticate&c=auth`,
+            `${config.defaults.api_url}?m=login&c=auth`,
             // `${config.defaults.api_url}/login.json`,
             body,
             {
                 headers: { 
                     // 'Access-Control-Allow-Origin': 'true',
                     "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "http://localhost:5173/"
+                    "Accept-Language": "en",
+                    "Sec-Fetch-Mode": "cors",
+                    "Access-Control-Allow-Origin": "http://localhost:5173"
                 }
                 // , {mode:'cors'}
             }

@@ -2,12 +2,15 @@
 <cfparam name="URL.c" default="">
 
 <cfif LEN(TRIM(URL.c)) EQ 0 OR LEN(TRIM(URL.m)) EQ 0><cfabort></cfif> 
-<cfdump var="#Application.cfcs#" />
 	
+<cfheader name="Access-Control-Allow-Origin" value="http://localhost:5173"/>
+
 <cfinvoke 
-    component="#Application.cfcs#/#URL.c#.cfc"
+    component="cfcs/#URL.c#"
+    sForm="#DeserializeJSON(GetHTTPRequestData().content)#"
     method = "#URL.m#"    
     returnvariable="res"
 />
+
 
 <cfoutput>#res#</cfoutput>

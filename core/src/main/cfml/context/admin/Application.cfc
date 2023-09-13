@@ -40,7 +40,7 @@ this.xmlFeatures = {
 	secure: true,
 	disallowDoctypeDecl: true
 };
-
+cfheader(name="Access-Control-Allow-Origin" value="http://localhost:5173");
 request.singleMode=getApplicationSettings().singleContext;
 if(request.singleMode) request.adminType="server";
 public function onRequestStart() {

@@ -1,12 +1,12 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
-import AppConfig from 'config/config';
-import cookie from 'js-cookie'
+// import AppConfig from 'config/config';
+// import cookie from 'js-cookie'
 
 
 axios.interceptors.request.use((config: InternalAxiosRequestConfig<string>) => {
     // config.headers.Authorization = `Bearer ${cookie.get("lucee_token")}`;
-    config.headers.Authorization = `Bearer ${cookie.get("lucee_token")}`;
-    config.headers.apiKey = AppConfig.defaults.api_key;
+    // config.headers.Authorization = `Bearer ${cookie.get("lucee_token")}`;
+    // config.headers.apiKey = AppConfig.defaults.api_key;
     return config;
 });
 

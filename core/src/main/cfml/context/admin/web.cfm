@@ -109,6 +109,9 @@
 		</cfif>
 	</cfif>
 </cfif>
+
+
+
 <!--- Process New Password !--->
 <cfif structKeyExists(form, "new_password") && structKeyExists(form, "new_password_re")>
 	<cfif len(form.new_password) LT 6>

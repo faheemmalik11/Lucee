@@ -11,6 +11,7 @@ const initialFormObj =  {
     password: '',
     language: 'en',
     remember: 's',
+    adminType: 'server',
 }
 
 const languageOptions = [
@@ -95,6 +96,7 @@ const Login = () => {
                                                 <input
                                                     type="text"
                                                     value={form.password}
+
                                                     onChange={(e: any) => {
                                                         setForm((prev: any) => {
                                                             return {

@@ -47,6 +47,9 @@ this.xmlFeatures = {
 	disallowDoctypeDecl: true
 };
 
+cfheader(name="Access-Control-Allow-Origin" value="http://localhost:5173");
+
+
 // var response = getPageContext().getResponse();
 // var response.setHeader("Access-Control-Allow-Origin","*");
 
@@ -59,7 +62,7 @@ public function onRequestStart() {
 	var Application.cfcs = localPath&"/cfcs";
 	
 	var response = getPageContext().getResponse();
-	response.setHeader("Access-Control-Allow-Origin","*");
+	response.setHeader("Access-Control-Allow-Origin","http://localhost:5173/login");
 	// if not logged in, we only allow access to admin|web|server[.cfm]
 	if(!structKeyExists(session, "passwordWeb") && !structKeyExists(session, "passwordServer")){
 		var fileName=listLast(cgi.script_name,"/");
@@ -68,13 +71,13 @@ public function onRequestStart() {
 			fileName="";
 		}
 		
-		if(fileName!="admin.cfm" && fileName!="web.cfm" && fileName!="server.cfm" && fileName!="index.cfm" && fileName!="restart.cfm") {
-			writeLog(text="Lucee Admin request to restricted file [#filename#] before login", type="error", log="application");
-			cfsetting(showdebugoutput:false);
-			cfheader(statuscode="404" statustext="Invalid access");
-			cfcontent(reset="true");
-			abort;
-		}
+		// if(fileName!="admin.cfm" && fileName!="web.cfm" && fileName!="server.cfm" && fileName!="index.cfm" && fileName!="restart.cfm") {
+		// 	writeLog(text="Lucee Admin request to restricted file [#filename#] before login", type="error", log="application");
+		// 	cfsetting(showdebugoutput:false);
+		// 	cfheader(statuscode="404" statustext="Invalid access");
+		// 	cfcontent(reset="true");
+		// 	abort;
+		// }
 	}
 }
 

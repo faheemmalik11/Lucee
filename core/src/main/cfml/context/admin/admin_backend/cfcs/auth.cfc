@@ -1,9 +1,6 @@
-<cfcomponent rest="true" restpath="APIroutes">
-
-    <cfscript>
-        var response = getPageContext().getResponse();
-        response.setHeader("Access-Control-Allow-Origin","*");
-    </cfscript>
+<cfcomponent displayname="Auth" hint="This component contains functions related to Authentication">
+    <!--- rest="true" restpath="APIroutes" --->
+    <!---
     <!--- Function to validate token--->
     <cffunction name="authenticate" access="remote" returntype="any">
         
@@ -43,7 +40,7 @@
                     <cfadmin 
                         action="hashPassword"
                         type="#Arguments.adminType#"
-                        pw="#Arguments["login_password"&Arguments.adminType]#"+
+                        pw="#Arguments["login_password"&Arguments.adminType]#"
                         returnVariable="hashedPassword"
                     >
 
@@ -91,49 +88,119 @@
         <cfreturn response>
         
     </cffunction>
+    --->
 
     <!--- User Login--->
-    <cffunction name="login" restpath="login" access="public" returntype="String" returnFormat="JSON" httpmethod="POST" produces="application/json">
-    
-        <cfargument name="password" type="string" required="yes">
-        <cfargument name="adminType" type="string" required="yes">
+    <cffunction name="login" access="public" returntype="String" returnFormat="JSON"> <!---  httpmethod="POST" produces="application/json" --->
+        <cfargument name="sForm" type="struct" required="yes" >
 
         <cfset var response = {}>
-        <cftry>
-            <cfadmin 
-                action="connect"
-                type="#Arguments.adminType#"
-                password="#Arguments.password##Arguments.adminType#"
-            >
-            
-            <cfif Arguments.adminType == "server">
-                <cfadmin 
-                    action="getDevelopMode"
-                    type="#Arguments.adminType#"
-                    password="#Arguments.password##Arguments.adminType#"
-                    returnVariable="mode" 
+
+        <cfif !structKeyExists(sForm, "password") OR LEN(TRIM(sForm['password'])) EQ 0>
+            <cfset response.success = false />
+            <cfset response.message = 'Please enter a valid password' />
+
+        <cfelseif !structKeyExists(sForm, "adminType") OR LEN(TRIM(sForm['adminType'])) EQ 0>
+            <cfset response.success = false />
+            <cfset response.message = 'No Admin type has been specified' />
+
+        <cfelse>
+
+            <cftry>
+
+                <cfadmin action="getLoginSettings"
+                    type="#sForm['adminType']#"
+                    returnVariable="loginSettings"
                 >
-                <cfset response.isLoggedIn = true />
-                <cfset response.message = "Logged In" />
 
-                <cfif mode.developMode>
-                    <cfset response.alwaysNew = true />
+                <cfset loginPause = loginSettings.delay>
+                <cfset keyLTL="lastTryToLogin"&":"& sForm['adminType']&":"&(cgi.context_path?:"")>
+                <cfif loginPause && structKeyExists(application, keyLTL) && isDate(application[keyLTL]) && DateDiff("s", application[keyLTL], now()) LT loginPause>
+                    <cfset login_error = "Login disabled until #lsDateFormat(dateAdd("s", loginPause, application[keyLTL]))# #lsTimeFormat(dateAdd("s", loginPause, application[keyLTL]),'hh:mm:ss')#">
+
+                    <cfset response.login_error = login_error />
+
+                <cfelse>
+                    <cfset application[keyLTL] = now()>
+                    <cfparam name="sForm['captcha']" default=""> 
+
+                    <cfif loginSettings.captcha && structKeyExists(session, "cap") && compare(sForm['captcha'],session.cap) != 0>
+                        <cfset login_error = "Invalid security code (captcha) definition">
+                        <cfset response.login_error = login_error />
+
+                    <cfelse>
+                        <cfadmin action="hashPassword"
+                            type="#sForm['adminType']#"
+                            pw="#sForm['password']#"
+                            returnVariable="hashedPassword"
+                        >
+                        
+                        <cfset session["password" & sForm['adminType']]=hashedPassword> 
+                        <cfset session.lucee_admin_lang=sForm['language']>
+                    
+                        <!--- Thread operation for update provider --->
+                        <cfcookie expires="NEVER" name="lucee_admin_lang" value="#sForm['language']#"> 
+                        <cfif sForm['remember'] != "s">
+                            <cfcookie
+                                expires="#dateAdd(sForm['remember'], 1, now())#"
+                                name="lucee_admin_pw_#sForm['adminType']#"
+                                value="#hashedPassword#">
+                        <cfelse>
+                            <cfcookie expires="Now" name="lucee_admin_pw_#sForm['adminType']#" value="">
+                        </cfif>
+                        <cfif isDefined("cookie.lucee_admin_lastpage") && cookie.lucee_admin_lastpage != "logout">
+                            <cfset url.action = cookie.lucee_admin_lastpage>
+                        </cfif>
+                    </cfif>
+                </cfif>          
+    
+
+                <cfif isDefined('hashedPassword')>
+
+                    <cfadmin 
+                        action="connect"
+                        type="#sForm['adminType']#"
+                        password="#hashedPassword#" 
+                    >
+
+                    <cfset response.isLoggedIn = true />
+                    <cfset response.message = "Logged In" />
+                    
+                    
+                    <cfif sForm['adminType'] == "server">
+                        <cfadmin 
+                            action="getDevelopMode"
+                            type="#sForm['adminType']#"
+                            <!--- password="#sForm['password']##sForm['adminType']#" --->
+                            password="#hashedPassword#"
+                            returnVariable="mode" 
+                        >
+                        
+
+                        <cfif mode.developMode>
+                            <cfset response.alwaysNew = true />
+                        </cfif>
+                    </cfif>
+
                 </cfif>
-            </cfif>
 
-            <cfcatch>
-                <cfset response.isLoggedIn = false />
-                <cfset response.alwaysNew = false />
-                <cfset response.message = cfcatch.message />
-                <cfreturn SerializeJSON(response)>
-            </cfcatch>
-        </cftry>
+                <cfcatch>
+                    <cfset response.isLoggedIn = false />
+                    <cfset response.alwaysNew = false />
+                    <cfset response.message = cfcatch.message />
+                    <cfreturn SerializeJSON(response)>
+                </cfcatch>
+            </cftry>
+
+        </cfif>
+        
 
         
         <cfreturn SerializeJSON(response)>
-
+    
     </cffunction>
 
+    <!---
     <!--- User specific functions --->
     <cffunction name="getuser" restpath="user/{id}" access="remote" returntype="struct" httpmethod="GET" produces="application/json">
 
@@ -152,5 +219,6 @@
         <cfreturn response>
 
     </cffunction>
+    --->
 
 </cfcomponent>
